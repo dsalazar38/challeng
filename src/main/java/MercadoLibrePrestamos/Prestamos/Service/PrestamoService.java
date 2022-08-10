@@ -29,10 +29,7 @@ public class PrestamoService implements IPrestamoService {
         return prestamosRepository.findById(id);
     }
 
-    @Override
-    public double getBalance(Date date, String target) {
-        return prestamosRepository.getBalance(date, target);
-    }
+
 
 
 }

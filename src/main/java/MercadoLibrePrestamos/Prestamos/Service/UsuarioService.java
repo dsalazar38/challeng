@@ -26,6 +26,6 @@ public class UsuarioService implements IUsuarioService{
 
     @Override
     public Usuario createUsuario(Usuario usuario) {
-        return null;
+        return usuarioRepository.save(usuario);
     }
 }

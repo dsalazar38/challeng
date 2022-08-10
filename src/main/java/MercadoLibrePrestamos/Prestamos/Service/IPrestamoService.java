@@ -15,6 +15,6 @@ public interface IPrestamoService {
 
     public Optional<Prestamos> getPrestamoById(long id);
 
-    public double getBalance(Date date, String target);
+
 
 }

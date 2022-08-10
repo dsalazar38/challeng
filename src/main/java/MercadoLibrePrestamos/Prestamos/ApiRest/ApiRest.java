@@ -9,7 +9,9 @@ import MercadoLibrePrestamos.Prestamos.Model.Prestamos;
 import MercadoLibrePrestamos.Prestamos.Model.Usuario;
 import MercadoLibrePrestamos.Prestamos.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -30,6 +32,10 @@ public class ApiRest {
     @Autowired
     IPagoService pagoService;
 
+    @PostMapping (path = "/createUsu")
+    public Usuario getAllusuarios(@RequestBody Usuario usuario){
+        return usuarioService.createUsuario(usuario);
+    }
 
     @GetMapping(path = "/Ususarios")
     public List<Usuario> getAllusuarios(){
@@ -37,7 +43,7 @@ public class ApiRest {
     }
 
     @PostMapping(path = "/SolicitudPrestamo")
-    public RespuestaSolicitudDTO solicitudPrestamo(@RequestBody SolicitudPrestamoDTO solicitud){
+    public ResponseEntity<RespuestaSolicitudDTO>  solicitudPrestamo(@RequestBody SolicitudPrestamoDTO solicitud){
         Optional<Usuario> usuario = usuarioService.getById(solicitud.getUser_id());
         Prestamos prestamos = new Prestamos();
         RespuestaSolicitudDTO respuesta = new RespuestaSolicitudDTO();
@@ -53,18 +59,20 @@ public class ApiRest {
                 target="NEW";
             }else if (usuario.get().getCantidad_prestamos() >= 2 &&
                         usuario.get().getCantidad_prestamos() < 5 &&
-                        usuario.get().getVolumen_prestamos() > 100000 &&
-                        usuario.get().getVolumen_prestamos() < 500000 &&
+                        usuario.get().getVolumen_prestamos() < 1000000 &&
+                        usuario.get().getVolumen_prestamos() > 500000 &&
                         solicitud.getAmount() <= 1000000 ){
                 rate =0.10;
                 target="FREQUENT";
 
             }else if (usuario.get().getCantidad_prestamos() > 5 &&
-                    usuario.get().getVolumen_prestamos() > 500000 &&
+                    usuario.get().getVolumen_prestamos() > 5000000 &&
                     solicitud.getAmount() <= 5000000 ){
                 rate=0.05;
                 target="PREMIUM";
 
+            }else {
+                return new ResponseEntity("No cumple con criterios de seleccion", HttpStatus.BAD_REQUEST);
             }
             double r = rate/12;
            // [ r + r / ( (1+r) ^ term - 1) ] x amount
@@ -80,7 +88,7 @@ public class ApiRest {
         prestamos = prestamoService.createPrestamo(prestamos);
         respuesta.setLoan_id(prestamos.getId());
         respuesta.setInstallment(mensualidad);
-        return respuesta;
+        return ResponseEntity.ok(respuesta);
     }
 
     @GetMapping(path = "/ListarPrestamos")
@@ -115,11 +123,6 @@ public class ApiRest {
     }
 
 
-    @GetMapping(path = "/balance")
-    public RespuestaBalanceDTO balance(@RequestParam(name = "date") String date, @RequestParam(name = "target") String target ){
-        RespuestaBalanceDTO respuesta = new RespuestaBalanceDTO();
 
-        return respuesta;
-    }
 
 }

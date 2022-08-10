@@ -16,6 +16,6 @@ public interface PrestamosRepository extends PagingAndSortingRepository<Prestamo
     public List<Prestamos> getListPrestamos(Date from, Date to);
 
 
-    @Query("select sum(u.amount) from Prestamos u where u.date > :data and u.target = :target")
-    public double getBalance(Date date, String target);
+    /*@Query("select sum(u.amount) from Prestamos u where u.date > :data and u.target = :target")
+    public double getBalance(Date date, String target);*/
 }
