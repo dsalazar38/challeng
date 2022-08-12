@@ -8,6 +8,7 @@ import MercadoLibrePrestamos.Prestamos.Model.Pagos;
 import MercadoLibrePrestamos.Prestamos.Model.Prestamos;
 import MercadoLibrePrestamos.Prestamos.Model.Usuario;
 import MercadoLibrePrestamos.Prestamos.Service.*;
+import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -32,10 +34,6 @@ public class ApiRest {
     @Autowired
     IPagoService pagoService;
 
-    @PostMapping (path = "/createUsu")
-    public Usuario getAllusuarios(@RequestBody Usuario usuario){
-        return usuarioService.createUsuario(usuario);
-    }
 
     @GetMapping(path = "/Ususarios")
     public List<Usuario> getAllusuarios(){
@@ -99,27 +97,79 @@ public class ApiRest {
     }
 
     @PostMapping(path = "/pago")
-    public Pagos makePago(@RequestBody SolicitudPagoDTO solicitud){
+    public ResponseEntity<Pagos> makePago(@RequestBody SolicitudPagoDTO solicitud){
         long loan_id = solicitud.getLoan_id();
 
        Optional<Prestamos> prestamo = prestamoService.getPrestamoById(loan_id);
         Pagos pago = new Pagos();
 
 
-       if(prestamo != null){
-           pago.setLoan_id(prestamo.get().getId());
-           pago.setAmount(solicitud.getAmount());
-           pago.setDebt(prestamo.get().getAmount());
-           pago.setDate(new Date());
+       if(!prestamo.isEmpty()){
+           if(solicitud.getAmount() <= prestamo.get().getAmount()) {
+               pago.setLoan_id(prestamo.get().getId());
+               pago.setAmount(solicitud.getAmount());
+               pago.setDebt(prestamo.get().getAmount());
+               pago.setDate(new Date());
 
 
-        pago = pagoService.doPago(pago);
+               pago = pagoService.doPago(pago);
+           }else{
+               return new ResponseEntity("el pago no puede ser mayor a la deduda", HttpStatus.BAD_REQUEST);
+           }
 
+       }else {
+           return new ResponseEntity("No se encontro credito", HttpStatus.BAD_REQUEST);
        }
 
 
 
-        return pago;
+        return ResponseEntity.ok(pago);
+    }
+
+    @GetMapping(path = "/balanceByTarget")
+    public ResponseEntity<RespuestaBalanceDTO> balance (@RequestParam(name = "date") String date, @RequestParam(name = "target") String target) throws ParseException {
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        RespuestaBalanceDTO respuesta = new RespuestaBalanceDTO();
+        List<Prestamos> lista = new ArrayList<>();
+
+        lista = prestamoService.getBalanceByDateAndTarget(formato.parse(date), target);
+        double total=0;
+        System.out.println("----------target----------"+target);
+        if(target.equals("REMIUM")  || target.equals("MEDIUM") || target.equals("NEW")){
+
+            for(int i=0; i<lista.size();i++){
+                total = total + lista.get(i).getAmount();
+            }
+            respuesta.setBalance(total);
+            return ResponseEntity.ok(respuesta);
+
+        }else{
+            return new ResponseEntity("No se reconoce el Target", HttpStatus.BAD_REQUEST);
+        }
+
+
+
+
+
+
+    }
+    @GetMapping(path = "/balance")
+    public RespuestaBalanceDTO balance2 (@RequestParam(name = "date") String date) throws ParseException {
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        RespuestaBalanceDTO respuesta = new RespuestaBalanceDTO();
+        List<Prestamos> lista = new ArrayList<>();
+
+        lista = prestamoService.getBalanceByDate(formato.parse(date));
+        double total=0;
+
+        for(int i=0; i<lista.size();i++){
+            total = total + lista.get(i).getAmount();
+        }
+        respuesta.setBalance(total);
+
+
+        return respuesta;
+
     }
 
 

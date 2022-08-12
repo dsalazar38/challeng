@@ -1,5 +1,6 @@
 package MercadoLibrePrestamos.Prestamos.Service;
 
+import MercadoLibrePrestamos.Prestamos.DTOs.RespuestaBalanceDTO;
 import MercadoLibrePrestamos.Prestamos.Model.Prestamos;
 import MercadoLibrePrestamos.Prestamos.Repository.PrestamosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,15 @@ public class PrestamoService implements IPrestamoService {
         return prestamosRepository.findById(id);
     }
 
+    @Override
+    public List<Prestamos> getBalanceByDate(Date date) {
+        return prestamosRepository.getBalanceByDate(date);
+    }
 
+    @Override
+    public List<Prestamos> getBalanceByDateAndTarget(Date date, String target) {
+        return prestamosRepository.getBalanceByDateAndTarget(date,target);
+    }
 
 
 }
