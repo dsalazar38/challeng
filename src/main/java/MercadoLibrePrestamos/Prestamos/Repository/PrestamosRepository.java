@@ -2,6 +2,8 @@ package MercadoLibrePrestamos.Prestamos.Repository;
 
 import MercadoLibrePrestamos.Prestamos.DTOs.RespuestaBalanceDTO;
 import MercadoLibrePrestamos.Prestamos.Model.Prestamos;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
@@ -14,7 +16,9 @@ public interface PrestamosRepository extends PagingAndSortingRepository<Prestamo
 
 
     @Query("select u from Prestamos u where u.date between :from and :to")
-    public List<Prestamos> getListPrestamos(Date from, Date to);
+    public Page<Prestamos> getListPrestamos(Date from, Date to, Pageable pageable);
+
+
 
 
     @Query("select u from Prestamos u where u.date < :dateTo")

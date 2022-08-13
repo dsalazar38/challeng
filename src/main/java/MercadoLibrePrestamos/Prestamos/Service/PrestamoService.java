@@ -4,6 +4,8 @@ import MercadoLibrePrestamos.Prestamos.DTOs.RespuestaBalanceDTO;
 import MercadoLibrePrestamos.Prestamos.Model.Prestamos;
 import MercadoLibrePrestamos.Prestamos.Repository.PrestamosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -21,9 +23,10 @@ public class PrestamoService implements IPrestamoService {
     }
 
     @Override
-    public List<Prestamos> getListPrestamos(Date from, Date to) {
-        return prestamosRepository.getListPrestamos(from ,to);
+    public Page<Prestamos> getListPrestamos(Date from, Date to, Pageable pageable) {
+        return prestamosRepository.getListPrestamos(from ,to, pageable);
     }
+
 
     @Override
     public Optional<Prestamos> getPrestamoById(long id) {

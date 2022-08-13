@@ -10,6 +10,8 @@ import MercadoLibrePrestamos.Prestamos.Model.Usuario;
 import MercadoLibrePrestamos.Prestamos.Service.*;
 import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -90,10 +92,14 @@ public class ApiRest {
     }
 
     @GetMapping(path = "/ListarPrestamos")
-    public List<Prestamos> GetPrestamos (@RequestParam(name = "from") String from, @RequestParam(name = "to") String to ) throws ParseException {
+    public List<Prestamos> GetPrestamos (@RequestParam(name = "from") String from, @RequestParam(name = "to") String to, @RequestParam(name = "page", defaultValue = "0") int page) throws ParseException {
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        Pageable pageRequest = PageRequest.of(page, 3);
+        List<Prestamos> respuesta =  prestamoService.getListPrestamos(formato.parse(from),  formato.parse(to), pageRequest).getContent();
 
-        return prestamoService.getListPrestamos(formato.parse(from),  formato.parse(to));
+        return respuesta;
+
+
     }
 
     @PostMapping(path = "/pago")
@@ -127,15 +133,15 @@ public class ApiRest {
     }
 
     @GetMapping(path = "/balanceByTarget")
-    public ResponseEntity<RespuestaBalanceDTO> balance (@RequestParam(name = "date") String date, @RequestParam(name = "target") String target) throws ParseException {
+    public ResponseEntity<RespuestaBalanceDTO> balance2 (@RequestParam(name = "date") String date, @RequestParam(name = "target") String target) throws ParseException {
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
         RespuestaBalanceDTO respuesta = new RespuestaBalanceDTO();
         List<Prestamos> lista = new ArrayList<>();
 
         lista = prestamoService.getBalanceByDateAndTarget(formato.parse(date), target);
         double total=0;
-        System.out.println("----------target----------"+target);
-        if(target.equals("REMIUM")  || target.equals("MEDIUM") || target.equals("NEW")){
+
+        if(target.equals("REMIUM")  || target.equals("MEDIUM") || target.equals("NEW")|| target.equals("FREQUENT")){
 
             for(int i=0; i<lista.size();i++){
                 total = total + lista.get(i).getAmount();
@@ -154,12 +160,20 @@ public class ApiRest {
 
     }
     @GetMapping(path = "/balance")
-    public RespuestaBalanceDTO balance2 (@RequestParam(name = "date") String date) throws ParseException {
+    public ResponseEntity<RespuestaBalanceDTO> balance (@RequestParam(name = "date") String date, @RequestParam(name = "target", defaultValue = "") String target) throws ParseException {
         SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
         RespuestaBalanceDTO respuesta = new RespuestaBalanceDTO();
         List<Prestamos> lista = new ArrayList<>();
 
-        lista = prestamoService.getBalanceByDate(formato.parse(date));
+        if(target.equals("")){
+            lista = prestamoService.getBalanceByDate(formato.parse(date));
+        }else if (target.equals("REMIUM")  || target.equals("MEDIUM") || target.equals("NEW")|| target.equals("FREQUENT")){
+            lista = prestamoService.getBalanceByDateAndTarget(formato.parse(date), target);
+        }else{
+            return new ResponseEntity("No se reconoce el Target", HttpStatus.BAD_REQUEST);
+        }
+
+
         double total=0;
 
         for(int i=0; i<lista.size();i++){
@@ -168,7 +182,7 @@ public class ApiRest {
         respuesta.setBalance(total);
 
 
-        return respuesta;
+        return ResponseEntity.ok(respuesta);
 
     }
 

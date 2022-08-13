@@ -66,9 +66,11 @@ Ejemplo:
 }
 
 Petición GET: /api/v1/ListarPrestamos
+Este EndPoint tiene paginacion, cada pagina tiene 3 Registros
 necesita los siguientes Query Params 
 From: fecha en formato YYYY-MM-DD. Ejemplo: 2022-06-01
 to: fecha en formato YYYY-MM-DD. Ejemplo: 2022-06-01
+page: la pagina que quiere traer
 
 Dará como respuesta un listado de los prestamos existentes dentro de las fechas
 
@@ -87,13 +89,9 @@ Dará como respuesta la información de pago realizado
 Petición GET: /api/v1/balance
 necesita los siguientes Query Params 
 date: fecha en formato YYYY-MM-DD. Ejemplo: 2022-06-01
+targe: Strig que puede ser: PREMIUM, MEDIUM, FREQUENT, NEW (OPCIONAL)
 
-Petición GET: /api/v1/balanceByTarget
-date: fecha en formato YYYY-MM-DD. Ejemplo: 2022-06-01
-targe: Strig que puede ser (PREMIUM, MEDIUM, NEW)
-
-
-Los dos EndPoints darán como respuesta un balance de los prestamos segun sus parámetros.
+Dará como respuesta un balance de los prestamos segun sus parámetros.
 
 
 
